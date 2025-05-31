@@ -46,12 +46,20 @@ if uploaded_file:
     player_df['Total Kills'] = pd.to_numeric(player_df['Total Kills'], errors='coerce')
     player_df['Total Assists'] = pd.to_numeric(player_df['Total Assists'], errors='coerce')
     player_df['Total Deaths'] = pd.to_numeric(player_df['Total Deaths'], errors='coerce')
+    player_df['AVG Kills'] = pd.to_numeric(player_df['AVG Kills'], errors='coerce')
+    player_df['AVG Assists'] = pd.to_numeric(player_df['AVG Assists'], errors='coerce')
+    player_df['AVG Deaths'] = pd.to_numeric(player_df['AVG Deaths'], errors='coerce')
+
     player_df['Calculated KDA'] = (player_df['Total Kills'] + player_df['Total Assists']) / player_df['Total Deaths'].replace(0, 1)
 
     for role in roles:
         role_players = player_df[player_df['Role'] == role].copy()
         role_players = role_players.dropna(subset=['Calculated KDA'])
-        top2 = role_players.sort_values(by='Calculated KDA', ascending=False).head(2)
+
+        # Prioritize by AVG Kills + AVG Assists - AVG Deaths, then Total Kills, then KDA
+        role_players['Impact Score'] = role_players['AVG Kills'] + role_players['AVG Assists'] - role_players['AVG Deaths']
+        role_players = role_players.sort_values(by=['Impact Score', 'Total Kills', 'Calculated KDA'], ascending=[False, False, False])
+        top2 = role_players.head(2)
 
         if len(top2) > 0:
             all_star['first'].append(top2.iloc[[0]])
@@ -61,14 +69,14 @@ if uploaded_file:
     if all_star['first']:
         first_team = pd.concat(all_star['first'])
         st.subheader("⭐ 1st All-Star Team")
-        st.dataframe(first_team[['Player', 'Team.1', 'Role', 'Total Kills', 'Total Assists', 'Total Deaths', 'Calculated KDA']])
+        st.dataframe(first_team[['Player', 'Team.1', 'Role', 'AVG Kills', 'AVG Assists', 'AVG Deaths', 'Total Kills', 'Total Assists', 'Total Deaths', 'Calculated KDA']])
     else:
         st.warning("Not enough data for 1st All-Star Team")
 
     if all_star['second']:
         second_team = pd.concat(all_star['second'])
         st.subheader("⭐ 2nd All-Star Team")
-        st.dataframe(second_team[['Player', 'Team.1', 'Role', 'Total Kills', 'Total Assists', 'Total Deaths', 'Calculated KDA']])
+        st.dataframe(second_team[['Player', 'Team.1', 'Role', 'AVG Kills', 'AVG Assists', 'AVG Deaths', 'Total Kills', 'Total Assists', 'Total Deaths', 'Calculated KDA']])
     else:
         st.warning("Not enough data for 2nd All-Star Team")
 
