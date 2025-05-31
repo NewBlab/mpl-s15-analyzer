@@ -56,17 +56,21 @@ if uploaded_file:
         role_players = role_players.dropna(subset=['Total Kills', 'Total Assists', 'Total Deaths'])
 
         if role == 'ROAM':
+            # Prioritize by assists, then deaths, then Calculated KDA
             role_players = role_players.sort_values(
                 by=['Total Assists', 'Total Deaths', 'Calculated KDA'],
                 ascending=[False, True, False]
             )
         else:
+            # Prioritize first by total contributions, then Calculated KDA
             role_players = role_players.sort_values(
                 by=['Total Kills', 'Total Assists', 'Total Deaths', 'Calculated KDA'],
                 ascending=[False, False, True, False]
             )
 
-        top2 = role_players.head(2)
+        # Among top 2, sort again by Calculated KDA to assign best to 1st team
+        top2 = role_players.head(2).sort_values(by='Calculated KDA', ascending=False)
+
         if len(top2) >= 1:
             first_team_rows.append(top2.iloc[0])
         if len(top2) == 2:
