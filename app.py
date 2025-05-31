@@ -3,20 +3,19 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
+st.title("🏆 MPL S15 Data-Driven Awards App")
+
+# Upload outside cached function
+uploaded_file = st.file_uploader("Upload the MPL S15 Excel file", type=['xlsx'])
+
 @st.cache_data
+def load_data(file):
+    df = pd.read_excel(file)
+    df.columns = df.columns.str.strip()
+    return df
 
-def load_data():
-    file = st.file_uploader("Upload the MPL S15 Excel file", type=['xlsx'])
-    if file:
-        df = pd.read_excel(file)
-        df.columns = df.columns.str.strip()
-        return df
-    return None
-
-data = load_data()
-
-if data is not None:
-    st.title("🏆 MPL S15 Data-Driven Awards App")
+if uploaded_file:
+    data = load_data(uploaded_file)
 
     # =========================
     # 1. Predict Champion
@@ -62,8 +61,7 @@ if data is not None:
     # 3. MVP Prediction
     # =========================
     st.header("🏅 Regular Season MVP Prediction")
-    # Define MVP score as weighted: KDA * Kill Participation * Games Played approximation
-    player_df = player_df.copy()
+    # Define MVP score as weighted: KDA * Kill Participation * Total Kills
     player_df['KDA Ratio'] = pd.to_numeric(player_df['KDA Ratio'], errors='coerce')
     player_df['Kill Participation'] = pd.to_numeric(player_df['Kill Participation'], errors='coerce')
     player_df['Total Kills'] = pd.to_numeric(player_df['Total Kills'], errors='coerce')
