@@ -22,7 +22,7 @@ if uploaded_file:
     # =========================
     st.header("🥇 Predicted Champion (Regular Season)")
     team_df = data[data['Team'].notna()].copy()
-    team_df = team_df[team_df['Rank'].notna()].copy()
+    team_df = team_df[team_df['Rank '].notna()].copy()
     team_df.columns = team_df.columns.str.strip()
     top6 = team_df.nsmallest(6, 'Rank')
     champion_row = top6.loc[top6['Rank'] == 1]
@@ -39,23 +39,32 @@ if uploaded_file:
     player_df.columns = player_df.columns.str.strip()
 
     roles = ['EXP', 'Jungle', 'Mid', 'Gold', 'Roam']
-    all_star = []
+    all_star = {'first': [], 'second': []}
 
     for role in roles:
         role_players = player_df[player_df['Role'] == role].copy()
         role_players = role_players.dropna(subset=['KDA Ratio'])
         role_players['KDA Ratio'] = pd.to_numeric(role_players['KDA Ratio'], errors='coerce')
         top2 = role_players.sort_values(by='KDA Ratio', ascending=False).head(2)
-        all_star.append(top2)
 
-    first_team = pd.concat([group.iloc[[0]] for group in all_star])
-    second_team = pd.concat([group.iloc[[1]] for group in all_star])
+        if len(top2) > 0:
+            all_star['first'].append(top2.iloc[[0]])
+        if len(top2) > 1:
+            all_star['second'].append(top2.iloc[[1]])
 
-    st.subheader("⭐ 1st All-Star Team")
-    st.dataframe(first_team[['Player', 'Team.1', 'Role', 'KDA Ratio']])
+    if all_star['first']:
+        first_team = pd.concat(all_star['first'])
+        st.subheader("⭐ 1st All-Star Team")
+        st.dataframe(first_team[['Player', 'Team.1', 'Role', 'KDA Ratio']])
+    else:
+        st.warning("Not enough data for 1st All-Star Team")
 
-    st.subheader("⭐ 2nd All-Star Team")
-    st.dataframe(second_team[['Player', 'Team.1', 'Role', 'KDA Ratio']])
+    if all_star['second']:
+        second_team = pd.concat(all_star['second'])
+        st.subheader("⭐ 2nd All-Star Team")
+        st.dataframe(second_team[['Player', 'Team.1', 'Role', 'KDA Ratio']])
+    else:
+        st.warning("Not enough data for 2nd All-Star Team")
 
     # =========================
     # 3. MVP Prediction
