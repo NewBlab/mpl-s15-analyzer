@@ -37,8 +37,9 @@ if uploaded_file:
     st.header("🌟 All-Star Teams (1st and 2nd)")
     player_df = data[data['Player'].notna()].copy()
     player_df.columns = player_df.columns.str.strip()
+    player_df['Role'] = player_df['Role'].str.upper().str.strip()  # Normalize role names
 
-    roles = ['EXP', 'Jungle', 'Mid', 'Gold', 'Roam']
+    roles = ['EXP', 'JUNGLE', 'MID', 'GOLD', 'ROAM']
     all_star = {'first': [], 'second': []}
 
     for role in roles:
