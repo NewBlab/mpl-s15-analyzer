@@ -22,7 +22,7 @@ if uploaded_file:
     # =========================
     st.header("🥇 Predicted Champion (Regular Season)")
     team_df = data[data['Team'].notna()].copy()
-    team_df = team_df[team_df['Rank'].notna()].copy()
+    team_df = team_df[team_df['Rank '].notna()].copy()
     team_df.columns = team_df.columns.str.strip()
     top6 = team_df.nsmallest(6, 'Rank')
     champion_row = top6.loc[top6['Rank'] == 1]
@@ -52,11 +52,19 @@ if uploaded_file:
         role_players = player_df[player_df['Role'] == role].copy()
         role_players = role_players.dropna(subset=['Total Kills', 'Total Assists', 'Total Deaths'])
 
-        # Prioritize first by total contributions, then KDA
-        role_players = role_players.sort_values(
-            by=['Total Kills', 'Total Assists', 'Total Deaths', 'Calculated KDA'],
-            ascending=[False, False, True, False]
-        )
+        if role == 'ROAM':
+            # Prioritize by assists, then deaths, then KDA for ROAM
+            role_players = role_players.sort_values(
+                by=['Total Assists', 'Total Deaths', 'Calculated KDA'],
+                ascending=[False, True, False]
+            )
+        else:
+            # Prioritize first by total contributions, then KDA
+            role_players = role_players.sort_values(
+                by=['Total Kills', 'Total Assists', 'Total Deaths', 'Calculated KDA'],
+                ascending=[False, False, True, False]
+            )
+
         top2 = role_players.head(2)
 
         if len(top2) > 0:
