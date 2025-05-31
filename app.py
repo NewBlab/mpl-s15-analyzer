@@ -22,7 +22,7 @@ if uploaded_file:
     # =========================
     st.header("🥇 Predicted Champion (Regular Season)")
     team_df = data[data['Team'].notna()].copy()
-    team_df = team_df[team_df['Rank '].notna()].copy()
+    team_df = team_df[team_df['Rank'].notna()].copy()
     team_df.columns = team_df.columns.str.strip()
     top6 = team_df.nsmallest(6, 'Rank')
     champion_row = top6.loc[top6['Rank'] == 1]
