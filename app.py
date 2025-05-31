@@ -42,11 +42,16 @@ if uploaded_file:
     roles = ['EXP', 'JUNGLE', 'MID', 'GOLD', 'ROAM']
     all_star = {'first': [], 'second': []}
 
+    # Use calculated KDA: (Kills + Assists) / max(Deaths, 1)
+    player_df['Total Kills'] = pd.to_numeric(player_df['Total Kills'], errors='coerce')
+    player_df['Total Assists'] = pd.to_numeric(player_df['Total Assists'], errors='coerce')
+    player_df['Total Deaths'] = pd.to_numeric(player_df['Total Deaths'], errors='coerce')
+    player_df['Calculated KDA'] = (player_df['Total Kills'] + player_df['Total Assists']) / player_df['Total Deaths'].replace(0, 1)
+
     for role in roles:
         role_players = player_df[player_df['Role'] == role].copy()
-        role_players = role_players.dropna(subset=['KDA Ratio'])
-        role_players['KDA Ratio'] = pd.to_numeric(role_players['KDA Ratio'], errors='coerce')
-        top2 = role_players.sort_values(by='KDA Ratio', ascending=False).head(2)
+        role_players = role_players.dropna(subset=['Calculated KDA'])
+        top2 = role_players.sort_values(by='Calculated KDA', ascending=False).head(2)
 
         if len(top2) > 0:
             all_star['first'].append(top2.iloc[[0]])
@@ -56,14 +61,14 @@ if uploaded_file:
     if all_star['first']:
         first_team = pd.concat(all_star['first'])
         st.subheader("⭐ 1st All-Star Team")
-        st.dataframe(first_team[['Player', 'Team.1', 'Role', 'KDA Ratio']])
+        st.dataframe(first_team[['Player', 'Team.1', 'Role', 'Total Kills', 'Total Assists', 'Total Deaths', 'Calculated KDA']])
     else:
         st.warning("Not enough data for 1st All-Star Team")
 
     if all_star['second']:
         second_team = pd.concat(all_star['second'])
         st.subheader("⭐ 2nd All-Star Team")
-        st.dataframe(second_team[['Player', 'Team.1', 'Role', 'KDA Ratio']])
+        st.dataframe(second_team[['Player', 'Team.1', 'Role', 'Total Kills', 'Total Assists', 'Total Deaths', 'Calculated KDA']])
     else:
         st.warning("Not enough data for 2nd All-Star Team")
 
@@ -72,17 +77,14 @@ if uploaded_file:
     # =========================
     st.header("🏅 Regular Season MVP Prediction")
     # Define MVP score as weighted: KDA * Kill Participation * Total Kills
-    player_df['KDA Ratio'] = pd.to_numeric(player_df['KDA Ratio'], errors='coerce')
     player_df['Kill Participation'] = pd.to_numeric(player_df['Kill Participation'], errors='coerce')
-    player_df['Total Kills'] = pd.to_numeric(player_df['Total Kills'], errors='coerce')
-
-    player_df['MVP Score'] = player_df['KDA Ratio'] * player_df['Kill Participation'] * player_df['Total Kills']
+    player_df['MVP Score'] = player_df['Calculated KDA'] * player_df['Kill Participation'] * player_df['Total Kills']
     mvp = player_df.sort_values(by='MVP Score', ascending=False).head(1)
 
     if not mvp.empty:
         best = mvp.iloc[0]
         st.success(f"🏅 Predicted MVP: **{best['Player']}** from **{best['Team.1']}**")
 
-    st.dataframe(mvp[['Player', 'Team.1', 'Role', 'KDA Ratio', 'Kill Participation', 'Total Kills', 'MVP Score']])
+    st.dataframe(mvp[['Player', 'Team.1', 'Role', 'Calculated KDA', 'Kill Participation', 'Total Kills', 'MVP Score']])
 else:
     st.info("Please upload the MPL S15 Excel file to continue.")
