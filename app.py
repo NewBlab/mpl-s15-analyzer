@@ -3,7 +3,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-st.title("🏆 MPL S15 Data-Driven Awards App")
+st.title("🏆 MPL S15 Analytics: 
+Champion, All-Star, and MVP Predictions")
 
 # Upload outside cached function
 uploaded_file = st.file_uploader("Upload the MPL S15 Excel file", type=['xlsx'])
